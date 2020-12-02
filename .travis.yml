@@ -30,7 +30,7 @@ before_script:
 
 script:
   - cd ..
-  - mv PassiveDataKit-Content-Analysis passive_data_kit_external_data_content_analysis
+  - mv PassiveDataKit-Content-Analysis passive_data_kit_content_analysis
   - mkdir django
   - cd django
   - django-admin.py startproject pdk
