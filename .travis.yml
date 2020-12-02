@@ -1,0 +1,46 @@
+dist: bionic
+language: python
+
+env:
+
+language: python
+
+python:
+  - 2.7
+  - 3.5
+
+addons:
+  postgresql: 9.5
+  apt:
+    packages:
+      - spatialite-bin
+      - postgresql-9.5-postgis-2.4
+  
+before_install:
+  - export PYTHONPATH=$HOME/builds/audaciouscode/pdk
+  
+install:
+  - pip install -r requirements.txt
+
+before_script:
+  - psql -U postgres -c "create extension postgis"
+  - psql -U postgres -c "CREATE DATABASE travisci;" 
+  - psql -U postgres -c "CREATE EXTENSION postgis" -d travisci
+  - psql -U postgres -c "CREATE EXTENSION postgis_topology" -d travisci
+
+script:
+  - cd ..
+  - mv PassiveDataKit-Content-Analysis passive_data_kit_external_data_content_analysis
+  - mkdir django
+  - cd django
+  - django-admin.py startproject pdk
+  - mv ../passive_data_kit_content_analysis pdk
+  - cd pdk
+  - cp passive_data_kit_content_analysis/travis_settings.py pdk/settings.py
+  - git clone https://github.com/audacious-software/PassiveDataKit-Django.git passive_data_kit
+  - python manage.py migrate
+  - python manage.py test
+  - cp passive_data_kit/.pylintrc .
+  - pylint passive_data_kit
+  - pylint passive_data_kit_content_analysis
+  - bandit -r .
