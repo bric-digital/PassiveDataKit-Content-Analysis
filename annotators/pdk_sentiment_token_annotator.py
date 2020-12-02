@@ -69,7 +69,7 @@ def annotate(content, field_name=None): # pylint: disable=too-many-branches
 
             token_no_punc = ''.join(ch for ch in token if ch not in non_punc).strip()
 
-            if token_no_punc == '':
+            if token_no_punc == '': # nosec
                 count += content.count(token)
 
             if count > 0:
