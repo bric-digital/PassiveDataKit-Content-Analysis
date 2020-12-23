@@ -14,6 +14,20 @@ SKIP_FIELD_NAMES = (
     'url',
 )
 
+DEFAULT_FIELD_PRIORITIES = (
+    'text',
+    'caption',
+    'fullText',
+    'full_text',
+    'post',
+    'comment',
+    'description',
+    'title',
+    'name',
+    'place',
+    'location',
+)
+
 def annotate(content, field_name=None): # pylint: disable=too-many-branches
     if field_name in SKIP_FIELD_NAMES:
         return {}
@@ -90,3 +104,72 @@ def annotate(content, field_name=None): # pylint: disable=too-many-branches
         annotation_field: scores,
         # 'cleartext': content,
     }
+
+
+def fetch_annotation_fields():
+    labels = []
+
+    for source in list(SentimentToken.objects.all().order_by('source').values_list('source', flat=True).distinct()):
+        for label in list(SentimentToken.objects.filter(source=source).order_by('label').values_list('label', flat=True).distinct()):
+            labels.append((source + '_' + label).lower())
+
+    return labels
+
+
+def fetch_annotations(properties, initial_field=None): # pylint: disable=too-many-return-statements, too-many-branches
+    if isinstance(properties, dict) is False:
+        return None
+
+    field_priorities = DEFAULT_FIELD_PRIORITIES
+
+    try:
+        field_priorities = settings.PDK_CONTENT_ANALYSIS_FIELD_PRIORITIES
+    except AttributeError:
+        pass
+
+    if initial_field is None:
+        for field in field_priorities:
+            sentiment_key = 'pdk_sentiment_scores_' + field
+
+            if sentiment_key in properties:
+                annotations = {}
+
+                for source in properties[sentiment_key]:
+                    for label in properties[sentiment_key][source]:
+                        annotations[(source + '_' + label).lower()] = properties[sentiment_key][source][label]
+
+                return annotations
+
+            annotations = fetch_annotations(properties, field)
+
+            if annotations is not None:
+                return annotations
+    else:
+        sentiment_key = 'pdk_sentiment_scores_' + initial_field
+
+        if sentiment_key in properties:
+            annotations = {}
+
+            for source in properties[sentiment_key]:
+                for label in properties[sentiment_key][source]:
+                    annotations[(source + '_' + label).lower()] = properties[sentiment_key][source][label]
+
+            return annotations
+
+        for key in properties:
+            value = properties[key]
+
+            if isinstance(value, dict):
+                annotations = fetch_annotations(value, initial_field)
+
+                if annotations is not None:
+                    return annotations
+
+            elif isinstance(value, list):
+                for item in value:
+                    annotations = fetch_annotations(item, initial_field)
+
+                    if annotations is not None:
+                        return annotations
+
+    return None
