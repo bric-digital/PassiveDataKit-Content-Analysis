@@ -1,6 +1,4 @@
-import importlib
-
-from django.conf import settings
+# pylint: disable=no-member, line-too-long
 
 from .models import SentimentTokenSource
 
