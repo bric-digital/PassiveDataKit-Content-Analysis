@@ -28,7 +28,7 @@ DEFAULT_FIELD_PRIORITIES = (
     'location',
 )
 
-def annotate(content, field_name=None): # pylint: disable=too-many-branches
+def annotate(content, field_name=None): # pylint: disable=too-many-branches, too-many-statements
     if field_name in SKIP_FIELD_NAMES:
         return {}
 
@@ -54,6 +54,13 @@ def annotate(content, field_name=None): # pylint: disable=too-many-branches
 
         print('Sentiment token cache built.')
 
+    no_punc_dictionary = {}
+
+    try:
+        no_punc_dictionary = settings.PDK_SENTIMENT_TOKEN_DICTIONARY_NO_PUNCTUATION_CACHE
+    except AttributeError:
+        settings.PDK_SENTIMENT_TOKEN_DICTIONARY_NO_PUNCTUATION_CACHE = no_punc_dictionary
+
     scores = {}
 
     if content is None:
@@ -61,37 +68,45 @@ def annotate(content, field_name=None): # pylint: disable=too-many-branches
 
     content = content.lower().strip()
 
-    non_punc = set(string.punctuation)
+    content_length = len(content)
 
-    for source in score_dictionary.keys():
+    punctuation = set(string.punctuation)
+
+    for source in score_dictionary.keys(): # pylint: disable=too-many-nested-blocks
         source_scores = {}
 
         for token in score_dictionary[source].keys():
-            count = 0
+            if content_length >= len(token):
+                count = 0
 
-            if content == token:
-                count += 1
+                if content == token:
+                    count += 1
+                elif content.startswith(token + ' '):
+                    count += 1
+                elif content.endswith(' ' + token):
+                    count += 1
+                elif (' ' + token + ' ') in content: # pylint: disable=superfluous-parens
+                    count += content.count(' ' + token + ' ')
 
-            if content.startswith(token + ' '):
-                count += 1
 
-            if content.endswith(' ' + token):
-                count += 1
+                token_no_punc = None
 
-            if (' ' + token + ' ') in content: # pylint: disable=superfluous-parens
-                count += content.count(' ' + token + ' ')
+                if token in no_punc_dictionary:
+                    token_no_punc = no_punc_dictionary[token]
+                else:
+                    token_no_punc = ''.join(ch for ch in token if ch not in punctuation).strip()
 
-            token_no_punc = ''.join(ch for ch in token if ch not in non_punc).strip()
+                    no_punc_dictionary[token] = token_no_punc
 
-            if token_no_punc == '': # nosec
-                count += content.count(token)
+                if token_no_punc == '': # nosec
+                    count += content.count(token)
 
-            if count > 0:
-                for label in score_dictionary[source][token]:
-                    if (label in source_scores) is False:
-                        source_scores[label] = 0
+                if count > 0:
+                    for label in score_dictionary[source][token]:
+                        if (label in source_scores) is False:
+                            source_scores[label] = 0
 
-                    source_scores[label] += count * score_dictionary[source][token][label]
+                        source_scores[label] += count * score_dictionary[source][token][label]
 
         scores[slugify(source).replace('-', '_')] = source_scores
 
