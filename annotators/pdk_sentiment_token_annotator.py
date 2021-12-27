@@ -28,7 +28,7 @@ DEFAULT_FIELD_PRIORITIES = (
     'location',
 )
 
-def annotate(content, field_name=None): # pylint: disable=too-many-branches, too-many-statements
+def annotate(content, field_name=None): # pylint: disable=too-many-branches, too-many-statements, too-many-locals
     if field_name in SKIP_FIELD_NAMES:
         return {}
 
