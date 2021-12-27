@@ -72,10 +72,10 @@ def annotate(content, field_name=None): # pylint: disable=too-many-branches, too
 
     punctuation = set(string.punctuation)
 
-    for source in score_dictionary.keys(): # pylint: disable=too-many-nested-blocks
+    for source in score_dictionary: # pylint: disable=too-many-nested-blocks
         source_scores = {}
 
-        for token in score_dictionary[source].keys():
+        for token in score_dictionary[source]:
             if content_length >= len(token):
                 count = 0
 
