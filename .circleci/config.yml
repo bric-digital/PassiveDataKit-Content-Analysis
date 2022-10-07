@@ -44,7 +44,7 @@ jobs:
             cp passive_data_kit_content_analysis/.pylintrc .
             pylint passive_data_kit_content_analysis
             pip install -r passive_data_kit/requirements.txt
-            pip install -r requirements.txt
+            pip install -r passive_data_kit_content_analysis/requirements.txt
             python manage.py migrate
             python manage.py test
             pylint passive_data_kit
@@ -93,7 +93,7 @@ jobs:
             cp passive_data_kit_content_analysis/.pylintrc .
             pylint passive_data_kit_content_analysis
             pip install -r passive_data_kit/requirements.txt
-            pip install -r requirements.txt
+            pip install -r passive_data_kit_content_analysis/requirements.txt
             python manage.py migrate
             python manage.py test
             pylint passive_data_kit
