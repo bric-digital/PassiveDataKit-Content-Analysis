@@ -52,7 +52,7 @@ class Command(BaseCommand):
         current_index = 0
 
         while current_index < latest_point.pk:
-            points = DataPoint.objects.filter(pk__gte=current_index, pk__lt=(current_index + 1000))
+            points = DataPoint.objects.filter(pk__gte=current_index, pk__lt=(current_index + 1000)) # pylint: disable=superfluous-parens
 
             for point in points:
                 properties = point.fetch_properties()
