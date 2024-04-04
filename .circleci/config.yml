@@ -40,7 +40,7 @@ jobs:
             mv project passive_data_kit_content_analysis
             mkdir django
             cd django
-            django-admin.py startproject pdk
+            django-admin startproject pdk
             mv ../passive_data_kit_content_analysis pdk
             cd pdk
             git clone https://github.com/audacious-software/PassiveDataKit-Django.git passive_data_kit
