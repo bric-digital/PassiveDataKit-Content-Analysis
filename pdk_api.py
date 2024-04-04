@@ -2,7 +2,7 @@
 
 from .models import SentimentTokenSource
 
-def update_data_type_definition(definition):
+def update_data_type_definition(definition, override_existing): # pylint: disable=unused-argument
     to_delete = []
 
     for key in definition.keys(): # pylint: disable=too-many-nested-blocks
